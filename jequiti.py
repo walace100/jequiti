@@ -1,7 +1,8 @@
 from random import randint
-from re import sub, search, finditer
+from re import sub, search, finditer, IGNORECASE
 import unicodedata
 from base import base_de_dados
+
 
 jogadores = {'Ana': 0, 'Bárbara': 0, 'Carlos': 0}
 jogador_ativo = 'Ana'
@@ -14,18 +15,19 @@ valor_rodada = 0
 valor_turno = 0
 
 
-def pre_turno():
-    limpar_vars()
-    definir_tema()
-    definir_palavras()
-    definir_mascaras()
-
-def rodada():
+def main():
     for i in range(3):
         pre_turno()
         definir_rodada(i + 1)
         turno()
         adicionar_turno(True)
+
+
+def pre_turno():
+    limpar_vars()
+    definir_tema()
+    definir_palavras()
+    definir_mascaras()
 
 
 def turno():
@@ -42,10 +44,32 @@ def turno():
 
         if not acertou_pergunta:
             passa_vez()
+            continue
 
-        if falta_letras():
+        definir_pontuacao(valor_roleta)
+
+        if falta_letras(): #
+            if not dizer_palavras():
+                continue
+
             painel()
             break
+
+def dizer_palavras():
+    while True:
+        resposta = input('Deseja dizer todas as palavras? [S/N] ')
+
+        if resposta.upper() not in 'SN':
+            continue
+        elif resposta.upper() == 'S':
+            return True
+        else:
+            return False
+
+
+def definir_pontuacao(pontuacao):
+    print(pontuacao)
+    jogadores[jogador_ativo] += pontuacao
 
 
 def falta_letras():
@@ -56,6 +80,7 @@ def falta_letras():
     if falta_total <= 3:
         return True
     return False
+
 
 def pergunta():
     while True:
@@ -71,7 +96,7 @@ def pergunta():
 
 
 def substituir_letras_mascarada(letra):
-    palavra = sem_acento(letra)
+    palavra = sem_acento(letra).upper()
     acertou_letra = False
     palavras_sem_acento = []
 
@@ -80,9 +105,11 @@ def substituir_letras_mascarada(letra):
 
     for i in range(len(palavras_sem_acento)):
         pos = []
-        if palavra in palavras_sem_acento[i]:
+
+        if palavra in palavras_sem_acento[i].upper():
             acertou_letra = True
-            for occ in finditer(palavra, palavras_sem_acento[i]):
+
+            for occ in finditer(palavra, palavras_sem_acento[i], flags=IGNORECASE):
                 list.append(pos, occ.start())
 
         for p in pos:
@@ -90,16 +117,22 @@ def substituir_letras_mascarada(letra):
 
     return acertou_letra
 
+
 def sem_acento(palavra):
     return unicodedata.normalize('NFKD', palavra).encode('ASCII', 'ignore').decode("utf-8") 
 
+
 def validar_resposta(resposta):
-    if search('[\u00C0-\u017F]', resposta):
+    palavra = resposta.strip().upper()
+
+    if search('[\u00C0-\u017F]', palavra):
         return (False, 'Digite uma letra sem acento. Tente novamente.')
-    elif len(resposta) > 1:
+    elif len(palavra) > 1:
         return (False, 'Digite apenas uma letra. Tente novamente.')
-    elif resposta in letras_usadas:
+    elif palavra in letras_usadas:
         return (False, 'A letra já foi utilizada. Tente novamente.')
+    elif len(palavra) < 1:
+        return (False, 'É preciso digitar uma letra. Tente novamente.')
     else:
         return (True,)
 
@@ -118,8 +151,9 @@ def limpar_vars():
     palavras = []
     letras_usadas = []
 
+
 def adicionar_letra_usada(letra):
-    list.append(letras_usadas, letra)
+    list.append(letras_usadas, letra.upper())
 
 
 def adicionar_turno(zerar = False):
@@ -207,7 +241,14 @@ def painel():
     print('+', '=' * 48, sep='')
     print('Jogador ativo: {}'.format(jogador_ativo))
     print('Pontuação atual: {}'.format(jogadores[jogador_ativo]))
-    print('Roleta: {}'.format(valor_roleta))
+
+    if isinstance(valor_roleta, int):
+        print('Roleta: {}'.format(valor_roleta))
+    elif valor_roleta.__name__ == 'passa_vez':
+        print('Roleta: PASSOU A VEZ!!!')
+    else:
+        print('Roleta: PERDEU TUDO!!!')
+
     print('Nova pontuação: {}'.format(jogadores[jogador_ativo]))
     print('+', '=' * 48, sep='')
     print('Tema: {}'.format(tema))
@@ -231,4 +272,5 @@ def mascara(palavra):
     return sub('\w', '_', palavra)
 
 
-rodada()
+if __name__ == '__main__':
+    main()
