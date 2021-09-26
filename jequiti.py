@@ -1,5 +1,5 @@
 from random import randint
-from re import sub, search, finditer, IGNORECASE
+from re import sub, search, finditer
 import unicodedata
 from base import base_de_dados
 
@@ -40,28 +40,42 @@ def turno():
             valor_roleta()
             continue
 
-        acertou_pergunta = pergunta()
-
-        if not acertou_pergunta:
+        if not pergunta():
             passa_vez()
             continue
 
         definir_pontuacao(valor_roleta)
 
-        if falta_letras(): #
+        if falta_letras():
+            painel()
+
             if not dizer_palavras():
                 continue
 
-            painel()
             break
+
 
 def dizer_palavras():
     while True:
         resposta = input('Deseja dizer todas as palavras? [S/N] ')
 
         if resposta.upper() not in 'SN':
+            print('Digite um caracter válido.')
             continue
         elif resposta.upper() == 'S':
+            quantidade_acertos = 0
+
+            for i in range(3):
+                palavra = input('Valendo {}, digite a {}º palavra: '.format(jogadores[jogador_ativo] * 2, i + 1))
+
+                if palavra.upper() in respostas_sem_acento():
+                    quantidade_acertos += 1
+                else:
+                    return False
+
+            if quantidade_acertos >= 3:
+                definir_pontuacao(jogadores[jogador_ativo] * 2)
+
             return True
         else:
             return False
@@ -77,7 +91,7 @@ def falta_letras():
     for p in palavras_mascaradas:
         falta_total += str.count(p, '_')
 
-    if falta_total <= 3:
+    if falta_total <= 3 and falta_total > 0:
         return True
     return False
 
@@ -88,7 +102,7 @@ def pergunta():
         resposta_validada = validar_resposta(resposta)
 
         if not resposta_validada[0]:
-            print(resposta_validada[1])
+            print(f"\033[1;31m{resposta_validada[1]}\033[m")
             continue
 
         adicionar_letra_usada(resposta)
@@ -98,24 +112,30 @@ def pergunta():
 def substituir_letras_mascarada(letra):
     palavra = sem_acento(letra).upper()
     acertou_letra = False
-    palavras_sem_acento = []
-
-    for p in palavras:
-        list.append(palavras_sem_acento, sem_acento(p))
+    palavras_sem_acento = respostas_sem_acento()
 
     for i in range(len(palavras_sem_acento)):
         pos = []
 
-        if palavra in palavras_sem_acento[i].upper():
+        if palavra in palavras_sem_acento[i]:
             acertou_letra = True
 
-            for occ in finditer(palavra, palavras_sem_acento[i], flags=IGNORECASE):
+            for occ in finditer(palavra, palavras_sem_acento[i]):
                 list.append(pos, occ.start())
 
         for p in pos:
             palavras_mascaradas[i] = palavras_mascaradas[i][:p] + palavra + palavras_mascaradas[i][p + 1:]
 
     return acertou_letra
+
+
+def respostas_sem_acento():
+    palavras_sem_acento = []
+
+    for p in palavras:
+        list.append(palavras_sem_acento, sem_acento(p).upper())
+    
+    return palavras_sem_acento
 
 
 def sem_acento(palavra):
@@ -211,7 +231,7 @@ def rodar_roleta():
     global valor_roleta
 
     roleta_rodada = roleta()
-    valor_roleta = roleta_rodada[randint(0, len(roleta_rodada) -1)]
+    valor_roleta = roleta_rodada[randint(0, len(roleta_rodada) - 1)]
 
 
 def passa_vez():
@@ -230,34 +250,38 @@ def perdeu_tudo():
 
 
 def painel():
-    print('+', '=' * 48, sep='')
-    print('RODADA {} - TURNO {}'.format(valor_rodada, valor_turno))
-    print('+', '=' * 48, sep='')
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+    print('\033[1;37;40mRODADA {} - TURNO {}\033[m'.format(valor_rodada, valor_turno))
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+
 
     for i in range(len(jogadores.keys())):
-        print('|', '{} - {}'.format(pegar_nome_por_numero(jogadores, i), pegar_valor_por_numero(jogadores, i)), end=' ')
+        print(f"\033[1;35;40m| {pegar_nome_por_numero(jogadores, i)} - {pegar_valor_por_numero(jogadores, i)}\033[m", end=' ')
 
     print('')
-    print('+', '=' * 48, sep='')
-    print('Jogador ativo: {}'.format(jogador_ativo))
-    print('Pontuação atual: {}'.format(jogadores[jogador_ativo]))
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+
+    print('\033[1;37;40mJogador ativo:\033[m \033[1;35;40m{}\033[m'.format(jogador_ativo))
+    print('\033[1;37;40mPontuação atual: \033[1;33;40m{}\033[m'.format(jogadores[jogador_ativo]))
 
     if isinstance(valor_roleta, int):
-        print('Roleta: {}'.format(valor_roleta))
+        print('\033[1;37;40mRoleta:\033[m \033[1;32;40m{}\033[m'.format(valor_roleta))
     elif valor_roleta.__name__ == 'passa_vez':
-        print('Roleta: PASSOU A VEZ!!!')
+        print('\033[1;37;40mRoleta:\033[m \033[1;31;40mPASSOU A VEZ!!!\033[m')
     else:
-        print('Roleta: PERDEU TUDO!!!')
+        print('\033[1;37;40mRoleta:\033[m \033[1;31;40mPERDEU TUDO!!!\033[m')
 
-    print('Nova pontuação: {}'.format(jogadores[jogador_ativo]))
-    print('+', '=' * 48, sep='')
-    print('Tema: {}'.format(tema))
-    print('+', '=' * 48, sep='')
-    print('P1) {}'.format(palavras_mascaradas[0]))
-    print('P2) {}'.format(palavras_mascaradas[1]))
-    print('P3) {}'.format(palavras_mascaradas[2]))
-    print('Letras já faladas: {}'.format('Nenhuma' if len(letras_usadas) == 0 else str.join(', ', letras_usadas)))
-    print('+', '=' * 48, sep='')
+    print('\033[1;37;40mNova pontuação:\033[m \033[1;32;40m{}\033[m'.format(jogadores[jogador_ativo]))
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+
+    print(f"\033[1;37;40mTema:\033[m \033[1;{randint(30, 37)};40m{tema}\033[m")
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+
+    print('\033[1;31;40mP1) {}\033[m'.format(palavras_mascaradas[0]))
+    print('\033[1;33;40mP2) {}\033[m'.format(palavras_mascaradas[1]))
+    print('\033[1;32;40mP3) {}\033[m'.format(palavras_mascaradas[2]))
+    print(f"\033[1;37;40mLetras já faladas:\033[m \033[1;{randint(30, 37)};40m{'Nenhuma' if len(letras_usadas) == 0 else str.join(', ', letras_usadas)}\033")
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
 
 
 def pegar_nome_por_numero(dicionario, i):
