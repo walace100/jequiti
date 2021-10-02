@@ -40,19 +40,20 @@ def turno():
             valor_roleta()
             continue
 
-        if not pergunta():
+        if not falta_zero_letras() and not pergunta():
             passa_vez()
             continue
 
         definir_pontuacao(valor_roleta)
 
-        if falta_letras():
+        if falta_zero_letras():
+            break
+
+        if falta_tres_letras():
             painel()
 
             if not dizer_palavras():
                 continue
-
-            break
 
 
 def dizer_palavras():
@@ -82,7 +83,6 @@ def dizer_palavras():
 
 
 def definir_pontuacao(pontuacao):
-    print(pontuacao)
     jogadores[jogador_ativo] += pontuacao
 
 
@@ -91,9 +91,19 @@ def falta_letras():
     for p in palavras_mascaradas:
         falta_total += str.count(p, '_')
 
+    return falta_total
+
+
+def falta_tres_letras():
+    falta_total = falta_letras()
+
     if falta_total <= 3 and falta_total > 0:
         return True
     return False
+
+
+def falta_zero_letras():
+    return falta_letras() == 0
 
 
 def pergunta():
@@ -298,3 +308,11 @@ def mascara(palavra):
 
 if __name__ == '__main__':
     main()
+
+
+# resolver nova pontuação
+# resolver acentuação
+# fazer documentação
+# colocar sleeps
+# fazer rodada final
+# tirar variaveis globais
