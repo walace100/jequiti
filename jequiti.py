@@ -1,5 +1,5 @@
 from random import randint
-from re import sub, search, finditer
+from re import sub, search, findall, IGNORECASE
 import unicodedata
 from base import base_de_dados
 
@@ -9,6 +9,8 @@ jogador_ativo = 'Ana'
 valor_roleta = 0
 tema = ''
 palavras = []
+palavra_final = ''
+palavras_mascaradas_final = ''
 palavras_mascaradas = []
 letras_usadas = []
 valor_rodada = 0
@@ -21,6 +23,53 @@ def main():
         definir_rodada(i + 1)
         turno()
         adicionar_turno(True)
+    ganhador()
+    rodada_final()
+
+
+def rodada_final():
+    definir_tema(True)
+    definir_palavra_final()
+    letras = pedir_letras()
+
+
+def definir_palavra_final():
+    global tema
+    global palavras_mascaradas_final
+    pass
+
+
+def ganhador():
+    maior_valor = sorted(list(jogadores.values()), reverse=True)[0]
+
+    for jogador in jogadores.items():
+        if jogador[1] == maior_valor:
+            jogador_ganhador = jogador[0]
+            break
+
+    sucesso(f"Parabéns {jogador_ganhador}, você ganhou {jogadores[jogador_ganhador]} reais!!!")
+    sucesso(f"O ganhador {jogador_ganhador} foi selecionado para a RODADA FINAL")
+
+
+def pedir_letras():
+    while True:
+        letras = input('Digite 5 consoantes e 1 vogal sem utilizar espaço ou qualquer separação: ')
+
+        if not validar_letras(letras):
+            continue
+        return letras
+
+def validar_letras(letras):
+    if not len(findall('[b-df-hj-np-tv-xz]', letras, flags=IGNORECASE)) == 5:
+        erro('Digite 5 consoantes. Tente novamente.')
+        return False
+    if not len(findall('[aeiou]', letras, flags=IGNORECASE)) == 1:
+        erro('Digite 1 vogal. Tente novamente.')
+        return False
+    if search('[\u00C0-\u017F]', letras):
+        erro('Digite uma letra sem acento. Tente novamente.')
+        return False
+    return True
 
 
 def pre_turno():
@@ -52,8 +101,9 @@ def turno():
         if falta_tres_letras():
             painel()
 
-            if not dizer_palavras():
-                continue
+            if dizer_palavras():
+                break
+            continue
 
 
 def dizer_palavras():
@@ -61,13 +111,13 @@ def dizer_palavras():
         resposta = input('Deseja dizer todas as palavras? [S/N] ')
 
         if resposta.upper() not in 'SN':
-            print('Digite um caracter válido.')
+            erro('Digite um caracter válido.')
             continue
         elif resposta.upper() == 'S':
             quantidade_acertos = 0
 
             for i in range(3):
-                palavra = input('Valendo {}, digite a {}º palavra: '.format(jogadores[jogador_ativo] * 2, i + 1))
+                palavra = input('Valendo {} reais, digite a {}º palavra: '.format(jogadores[jogador_ativo] * 2, i + 1))
 
                 if palavra.upper() in respostas_sem_acento():
                     quantidade_acertos += 1
@@ -75,6 +125,7 @@ def dizer_palavras():
                     return False
 
             if quantidade_acertos >= 3:
+                sucesso(f"O jogador {jogador_ativo}, ganhou {jogadores[jogador_ativo] * 2} reais")
                 definir_pontuacao(jogadores[jogador_ativo] * 2)
 
             return True
@@ -112,7 +163,7 @@ def pergunta():
         resposta_validada = validar_resposta(resposta)
 
         if not resposta_validada[0]:
-            print(f"\033[1;31m{resposta_validada[1]}\033[m")
+            erro(resposta_validada[1])
             continue
 
         adicionar_letra_usada(resposta)
@@ -130,11 +181,9 @@ def substituir_letras_mascarada(letra):
         if palavra in palavras_sem_acento[i]:
             acertou_letra = True
 
-            for occ in finditer(palavra, palavras_sem_acento[i]):
-                list.append(pos, occ.start())
-
-        for p in pos:
-            palavras_mascaradas[i] = palavras_mascaradas[i][:p] + palavra + palavras_mascaradas[i][p + 1:]
+            for j in range(len(palavras[i])):
+                if palavra == sem_acento(palavras[i][j]).upper():
+                    palavras_mascaradas[i] = palavras_mascaradas[i][:j] + palavras[i][j].upper() + palavras_mascaradas[i][j + 1:]
 
     return acertou_letra
 
@@ -195,13 +244,13 @@ def adicionar_turno(zerar = False):
         valor_turno += 1
 
 
-def definir_tema(aleatorio = True, i = 0):
+def definir_tema(final=False):
     global tema
 
-    if aleatorio:
+    if final:
         tema = pegar_nome_por_numero(base_de_dados, randint(0, 9))
     else:
-        tema = pegar_nome_por_numero(base_de_dados, i - 1)
+        tema = pegar_nome_por_numero(base_de_dados, randint(0, 9))
 
 
 def definir_palavras():
@@ -276,12 +325,14 @@ def painel():
 
     if isinstance(valor_roleta, int):
         print('\033[1;37;40mRoleta:\033[m \033[1;32;40m{}\033[m'.format(valor_roleta))
+        print('\033[1;37;40mNova pontuação:\033[m \033[1;32;40m{}\033[m'.format(jogadores[jogador_ativo] + valor_roleta))
     elif valor_roleta.__name__ == 'passa_vez':
         print('\033[1;37;40mRoleta:\033[m \033[1;31;40mPASSOU A VEZ!!!\033[m')
+        print('\033[1;37;40mNova pontuação:\033[m \033[1;37;40m{}\033[m'.format(jogadores[jogador_ativo]))
     else:
         print('\033[1;37;40mRoleta:\033[m \033[1;31;40mPERDEU TUDO!!!\033[m')
+        print('\033[1;37;40mNova pontuação:\033[m \033[1;37;40m0\033[m')
 
-    print('\033[1;37;40mNova pontuação:\033[m \033[1;32;40m{}\033[m'.format(jogadores[jogador_ativo]))
     print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
 
     print(f"\033[1;37;40mTema:\033[m \033[1;{randint(30, 37)};40m{tema}\033[m")
@@ -306,13 +357,19 @@ def mascara(palavra):
     return sub('\w', '_', palavra)
 
 
+def sucesso(msg):
+    print(f"\033[1;32;40m{msg}\033[m")
+
+
+def erro(msg):
+    print(f"\033[1;31;40m{msg}\033[m")
+
+
 if __name__ == '__main__':
     main()
 
 
-# resolver nova pontuação
-# resolver acentuação
-# fazer documentação
-# colocar sleeps
 # fazer rodada final
+# colocar sleeps
 # tirar variaveis globais
+# fazer documentação
