@@ -1,0 +1,1 @@
+# Trabalho do primeiro trimestre da disciplina de computação I de BCMT
