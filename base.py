@@ -85,3 +85,72 @@ base_de_dados = {
         'Portugal'
     ]
 }
+
+rodada_final = {
+    'países': [
+        'Estados Unidos'
+        'Portugal',
+        'Afeganistão',
+        'África do Sul',
+        'Antígua e Barbuda',
+        'Bósnia e Herzegovina',
+        'Burquina Faso',
+        'Quirguizistão',
+        'República Centro-Africana',
+        'Wallis e Futuna',
+        'Southern Ocean'
+    ],
+    'estados': [
+        'Tocantins',
+        'Rio grande do Sul',
+        'Rio de Janeiro',
+        'Destrito Federal',
+        'Mato Grosso',
+        'Espirito Santo',
+        'Mato Grosso do Sul',
+        'Amazonas'
+    ],
+    'cores': [
+        'Sang-de-boeuf',
+        'Âmbar-bastardo',
+        'Drunk-Tank Pink',
+        'Pervenche'
+    ],
+    'profissões': [
+        'telefonista',
+        'recepicionista',
+        'meteorologista',
+        'biotecnólogo'
+    ],
+    'pontos turísticos do Rio de Janeiro': [
+        'Cristo Redentor',
+        'Escadaria Selarón',
+        'Mirante Dona Marta',
+        'Museu do Amanhã',
+        'Jardim Botânico',
+        'Lagoa Rodrigo de Freitas'
+    ],
+    'bairros do Rio de Janeiro': [
+        'São Cristóvão',
+        'Vila Kennedy',
+        'Rio Comprido',
+        'Santa Teresa',
+        'Santo Cristo',
+        'Vasco da Gama',
+        'Cosme Velho',
+        'Jardim Botânico',
+        'Laranjeiras'
+    ],
+    '': [
+
+    ],
+    '': [
+
+    ],
+    '': [
+
+    ],
+    '': [
+        
+    ]
+}
