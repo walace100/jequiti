@@ -1,7 +1,7 @@
 from random import randint
 from re import sub, search, findall, IGNORECASE
 import unicodedata
-from base import base_de_dados
+from base import base_de_dados, rodada_final
 
 
 jogadores = {'Ana': 0, 'Bárbara': 0, 'Carlos': 0}

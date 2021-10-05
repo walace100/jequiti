@@ -141,16 +141,26 @@ rodada_final = {
         'Jardim Botânico',
         'Laranjeiras'
     ],
-    '': [
-
+    'quarto': [
+        'ventilador',
+        'travesseiro',
+        'lençol de cama'
     ],
-    '': [
-
+    'Profissões de TI': [
+        'Programador',
+        'Administrador de banco de dados',
+        'Redes de Computadores',
+        'Engenharia de Computação'
     ],
-    '': [
-
+    'edifícios conhecidos de São Paulo': [
+        'Altino Arantes',
+        'Martinelli',
+        'Mirante do Vale',
     ],
-    '': [
-        
+    'bairros de São Paulo': [
+        'Pinheiros',
+        'Perdizes',
+        'Vila Madalena',
+        'Vila Nova Conceição'
     ]
 }
