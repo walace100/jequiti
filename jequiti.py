@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, sample
 from re import sub, search, findall, IGNORECASE
 import unicodedata
 from base import base_de_dados, rodada_final
@@ -24,19 +24,61 @@ def main():
         turno()
         adicionar_turno(True)
     ganhador()
-    rodada_final()
+    ultima_rodada()
 
 
-def rodada_final():
+def ultima_rodada():
     definir_tema(True)
     definir_palavra_final()
+    definir_mascara_final()
+    painel_final()
     letras = pedir_letras()
+    substituir_letras_mascarada_final(letras)
+    painel_final()
+    if dizer_palavra_final():
+        sucesso(f"Parabéns!!! o jogador {jogador_ativo} ganhou {jogadores[jogador_ativo]} reais!!!")
+    else:
+        erro(f"Infelizmente você errou, a palavra certa era {palavra_final.upper()}, você saiu com {jogadores[jogador_ativo]} reais")
+
+
+def dizer_palavra_final():
+    palavra = sem_acento(input('Valendo {} reais, digite a palavra: '.format(jogadores[jogador_ativo] * 2)))
+
+    if palavra.upper() == sem_acento(palavra_final).upper():
+        definir_pontuacao(jogadores[jogador_ativo] * 2)
+        return True
+    return False
+
+
+def substituir_letras_mascarada_final(letras):
+    global palavra_final
+    global palavras_mascaradas_final
+
+    palavra_final_sem_acento = sem_acento(palavra_final).upper()
+    letras_separadas = [letra.upper() for letra in letras]
+
+    for i in range(len(palavra_final_sem_acento)):
+        pos = []
+
+        for letra_separada in letras_separadas:
+            if palavra_final_sem_acento[i] == letra_separada:
+                list.append(pos, i)
+        
+        for j in pos:
+            palavras_mascaradas_final = palavras_mascaradas_final[:j] + palavra_final_sem_acento[i] + palavras_mascaradas_final[j + 1:]
 
 
 def definir_palavra_final():
     global tema
+    global palavra_final
+
+    i = randint(0, len(rodada_final[tema]) - 1)
+    palavra_final = rodada_final[tema][i]
+
+
+def definir_mascara_final():
     global palavras_mascaradas_final
-    pass
+    palavras_mascaradas_final = mascara(palavra_final)
 
 
 def ganhador():
@@ -47,6 +89,7 @@ def ganhador():
             jogador_ganhador = jogador[0]
             break
 
+    sucesso(f"O grande ganhou foi {jogador_ganhador}!!!")
     sucesso(f"Parabéns {jogador_ganhador}, você ganhou {jogadores[jogador_ganhador]} reais!!!")
     sucesso(f"O ganhador {jogador_ganhador} foi selecionado para a RODADA FINAL")
 
@@ -58,6 +101,7 @@ def pedir_letras():
         if not validar_letras(letras):
             continue
         return letras
+
 
 def validar_letras(letras):
     if not len(findall('[b-df-hj-np-tv-xz]', letras, flags=IGNORECASE)) == 5:
@@ -117,7 +161,7 @@ def dizer_palavras():
             quantidade_acertos = 0
 
             for i in range(3):
-                palavra = input('Valendo {} reais, digite a {}º palavra: '.format(jogadores[jogador_ativo] * 2, i + 1))
+                palavra = sem_acento(input('Valendo {} reais, digite a {}º palavra: '.format(jogadores[jogador_ativo] * 2, i + 1)))
 
                 if palavra.upper() in respostas_sem_acento():
                     quantidade_acertos += 1
@@ -176,8 +220,6 @@ def substituir_letras_mascarada(letra):
     palavras_sem_acento = respostas_sem_acento()
 
     for i in range(len(palavras_sem_acento)):
-        pos = []
-
         if palavra in palavras_sem_acento[i]:
             acertou_letra = True
 
@@ -248,7 +290,7 @@ def definir_tema(final=False):
     global tema
 
     if final:
-        tema = pegar_nome_por_numero(base_de_dados, randint(0, 9))
+        tema = pegar_nome_por_numero(rodada_final, randint(0, 9))
     else:
         tema = pegar_nome_por_numero(base_de_dados, randint(0, 9))
 
@@ -257,13 +299,7 @@ def definir_palavras():
     global palavras
 
     if len(base_de_dados[tema]) > 3:
-
-        while len(palavras) < 3:
-            i = randint(0, len(base_de_dados[tema]) - 1)
-
-            if list.count(palavras, base_de_dados[tema][i]) > 0:
-                continue
-            list.append(palavras, base_de_dados[tema][i])
+        palavras = sample(base_de_dados[tema], k=3)
     else:
         palavras = base_de_dados[tema]
 
@@ -306,6 +342,20 @@ def passa_vez():
 def perdeu_tudo():
     jogadores[jogador_ativo] = 0
     passa_vez()
+
+
+def painel_final():
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+    print('\033[1;37;40mRODADA FINAL\033[m')
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+    print('\033[1;37;40mJogador ativo:\033[m \033[1;35;40m{}\033[m'.format(jogador_ativo))
+    print('\033[1;37;40mPontuação atual: \033[1;33;40m{}\033[m'.format(jogadores[jogador_ativo]))
+    print('\033[1;37;40mNova pontuação:\033[m \033[1;32;40m{}\033[m'.format(jogadores[jogador_ativo] * 2))
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+    print(f"\033[1;37;40mTema:\033[m \033[1;{randint(30, 37)};40m{tema}\033[m")
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
+    print('\033[1;37;40mPalavra Final: {}\033[m'.format(palavras_mascaradas_final))
+    print(f"\033[4;31m+{'=' * 48}\033[m", sep='')
 
 
 def painel():
@@ -368,8 +418,7 @@ def erro(msg):
 if __name__ == '__main__':
     main()
 
-
-# fazer rodada final
-# colocar sleeps
-# tirar variaveis globais
-# fazer documentação
+# reescrever o código
+    # colocar sleeps
+    # tirar variaveis globais
+    # fazer documentação

@@ -76,7 +76,7 @@ base_de_dados = {
     ],
     'países': [
         'Brasil',
-        'Estados Unidos'
+        'Estados Unidos',
         'Canadá',
         'México',
         'Colombia',
