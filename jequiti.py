@@ -4,6 +4,7 @@ from time import sleep
 from random import randint, sample, choice
 from re import sub, search, findall, finditer, IGNORECASE
 
+# RECOMENDO USAR NO VSCODE OU EM OUTRO TERMINAL QUE ACEITE CORES.
 
 def main() -> None:
     """Função principal que executa outras funções para o funcionamento do roda roda.
@@ -11,6 +12,10 @@ def main() -> None:
     # Bases de dados.
 
     from base import base_de_dados, rodada_final
+
+    # base_de_dados = {}
+
+    # rodada_final = {}
 
     # Vars "globais"
 
@@ -80,7 +85,7 @@ def main() -> None:
 
                 letras_usadas = adicionar_letra_usada(letra, letras_usadas)
 
-                if acertou_letra(letra, palavras):
+                if not acertou_letra(letra, palavras):
                     jogador_ativo = passa_vez(jogadores, jogador_ativo)
                     continue
 
@@ -124,11 +129,18 @@ def main() -> None:
 
     painel_final(jogadores, jogador_ativo, palavra_mascarada_final, tema)
 
+    sleep(.5)
+    msg_cor("Processando...", 37)
+    sleep(3)
+
     if dizer_palavra_final(jogadores, jogador_ativo, palavra_final):
         jogadores[jogador_ativo] *= 2
         sucesso(f"Parabéns!!! o jogador {jogador_ativo} ganhou {jogadores[jogador_ativo]} reais!!!")
     else:
         erro(f"Infelizmente você errou, a palavra certa era {palavra_final.upper()}, você saiu com {jogadores[jogador_ativo]} reais")
+
+    sleep(1)
+    sucesso("FIM DE JOGO!")
 
 
 def pegar_nome_por_numero(dicionario: dict, i: int) -> str:
@@ -214,8 +226,8 @@ def rodar_roleta() -> any:
         Retorna um novo valor da roleta.
     """
     valores = [i for i in range(100, 951, 50)]
-    valores.extend([passa_vez, perdeu_tudo, 1000, 1000])
-    return sample(valores, k=1)[0]
+    valores.extend([passa_vez, passa_vez, perdeu_tudo, perdeu_tudo, 1000, 1000])
+    return choice(valores)
 
 
 def passa_vez(jogadores: dict, jogador_ativo: str) -> str:
@@ -367,7 +379,7 @@ def pergunta(valor_roleta: int, letras_usadas: list) -> str:
         if not resposta_validada[0]:
             erro(resposta_validada[1])
             continue
-        return resposta
+        return resposta.upper()
 
 
 def validar_resposta(resposta: str, letras_usadas: list):
@@ -506,6 +518,7 @@ def dizer_palavras(jogador_ativo: str, palavras: list) -> bool:
         if palavra.upper() in palavras_sem_acento:
             quantidade_acertos += 1
         else:
+            erro('Você não acertou uma das três palavras!')
             return False
 
     if quantidade_acertos == 3:
@@ -545,6 +558,10 @@ def pedir_tema(base: dict) -> str:
     while True:
         numero = input('Digite um número de 1 a 10 para escolher o tema: ')
 
+        sleep(1)
+        msg_cor("Processando...", 37)
+        sleep(.5)
+
         if not validar_numero(numero):
             continue
         
@@ -581,20 +598,25 @@ def painel_final(jogadores: dict, jogador_ativo: str, palavras_mascaradas_final:
         palavras_mascaradas_final: a máscara da palavra final.
         tema: o nome do tema ativo.
     """
+    sleep(.1)
     painel_separacao()
     msg_cor("RODADA FINAL", 37)
     painel_separacao()
+    sleep(.1)
 
     msg_cor(f"Jogador ativo:\033[m \033[1;35;40m{jogador_ativo}\033[m", 37)
     msg_cor(f"Pontuação atual: \033[1;33;40m{jogadores[jogador_ativo]}\033[m", 37)
     msg_cor(f"Nova pontuação:\033[m \033[1;32;40m{jogadores[jogador_ativo] * 2}\033[m", 37)
+    sleep(.1)
 
     painel_separacao()
     msg_cor(f"Tema:\033[m \033[1;{randint(30, 37)};40m{tema}\033[m", 37)
+    sleep(.1)
 
     painel_separacao()
     msg_cor(f"Palavra Final: {palavras_mascaradas_final}", 37)
     painel_separacao()
+    sleep(.1)
 
 
 def pedir_letras() -> str:
@@ -605,6 +627,10 @@ def pedir_letras() -> str:
     """
     while True:
         letras = input('Digite 5 consoantes e 1 vogal sem utilizar espaço ou qualquer separação: ')
+
+        sleep(1)
+        msg_cor("Processando...", 37)
+        sleep(.5)
 
         if not validar_letras(letras):
             continue
